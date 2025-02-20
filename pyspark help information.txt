@@ -1,0 +1,173 @@
+# =============================== Conditions ===============================
+
+# source_code_list = ["PURCHASES", "SALES"]
+
+# display(query_df.filter(query_df.Source_Code.isin(source_code_list))) # Used for checking multiple values in the column data /For example - list as Above/
+
+# display(query_df.filter((query_df['Document_No'] == "5000001") & (query_df["Amount"] > 46))) # Both conditions must be met
+
+# display(query_df.filter((query_df['Document_No'] == "5000001") | (query_df["Amount"] > 46))) # One of the conditions must be met
+
+# display(query_df.filter(query_df['Document_No'] == "5000001")) # Everything equal to 5000001 (Value in the noted column Document_No)
+
+# display(query_df.filter(query_df['Document_No'] != "5000001")) # Everything NOT equal to 5000001 (Value in the noted column Document_No)
+
+# display(query_df.filter(~(query_df['Document_No'] == "5000001"))) # Everything NOT equal to 5000001 (Value in the noted column Document_No)
+
+# display(query_df.filter(query_df.Document_No.startswith("500"))) # Everything start with 500 (Value in the noted column Document_No)
+
+# display(query_df.filter(query_df.Document_No.endswith("001"))) # # Everything end with 5000001 (Value in the noted column Document_No)
+
+# display(query_df.filter(query_df.Document_No.contains("00000"))) # If the value data in current column contains the needed element
+
+ 
+
+# =============================== Table manipulations ===============================
+
+# query_df.printSchema() # shows the type of values in the tables by columns
+
+# display(query_df) # shows the data as normal table with rows and can be use filters over it
+
+# display(query_df.head(2)) # this shows as rows as we need ot check
+
+# query_df.withColumnRenamed('Entry_No', 'NumberOfEntries') # change the name of the columns
+
+# query_df.withColumn('2x_amount', query_df['Amount'] * 2) # adding new column with value of each row which is doubled of the amount
+
+# query_df.drop('2x_amount') # Delete the column and all details in it
+
+# query_df.show(5, truncate=False) # this shows the first 5 rows and the truncate delete the text from the columns if it is more than 20 characters
+
+ 
+
+# =============================== GroupBy and Aggregates ===============================
+
+# display(query_df.groupBy('Document_No').count()) # Creating two columns which calculate how many times the values in the current column are repeated
+
+# display(query_df.groupBy('Document_No').max('Amount')) # The highest amount of the value in noted column Document_No
+
+# display(query_df.groupBy('Document_No').min('Amount')) # The opposite of the above condition
+
+# display(query_df.groupBy('Document_No').max('Amount').withColumnRenamed('max(Amount)', 'Highest_Amount')) # Rename the column name
+
+# display(query_df.groupBy('Document_No').agg(max('Amount').alias('Gosho'))) # Second way to rename the column, but in this case we need to import max from pyspark.sql.functions
+
+# display(query_df.groupBy('Document_No').agg(round(max('Amount'), 1).alias('Max_Amount_Rounded'))) # Same as above, but in this case the max amount is rounded /round must be imported/
+
+# display(query_df.groupBy('Document_No').agg(round(max('Amount'), 1).alias('Max_Amount_Rounded')).where(col("Max_Amount_Rounded") >= 5042.6)) # Additional filter where as 'col' must be imported
+
+# display(query_df.groupBy('Document_No').agg(round(max('Amount'), 1).alias('Max_Amount_Rounded')).where(col("Max_Amount_Rounded") >= 5042.6))
+
+# display(query_df.groupBy('Document_No', 'Posting_Date').max('Amount')) # More than one column
+
+ 
+
+# =============================== Handling missing value in columns ===============================
+
+# display(query_df.na.drop()) # remove all rows which includes null in some of their values
+
+# display(query_df.na.drop(how='all')) # if everything is null in the row
+
+# display(query_df.na.drop(how='any')) # if any of the values is null
+
+# display(query_df.na.drop(thresh=5)) # return the data for every row which includes data at least in 5 boxes
+
+# display(query_df.na.drop(subset="Document_Type")) # return the data where the null not in column Document_Type /searching only in this column/, can be a list of columns
+
+# display(query_df.na.fill(value="Missing Doc Number", subset="Document_Type")) # Changint null values in the noted column to Missing Doc Number
+
+ 
+
+# =============================== Machine Learning ===============================
+
+# imputer = Imputer( # this is machine process
+
+#     inputCols=['Amount'], # Noted the needed column and looks for unusual values as null
+
+#     outputCols=['AmountImputed'], # Create a new column
+
+#     strategy="mean"
+
+# )
+
+# model = imputer.fit(query_df) # Generate the model
+
+# imputed_df = model.transform(query_df) # Transfor the unusual values and add the new one into the AmountImputed, as analyze the how data in the column and gives a middle result
+
+# display(imputed_df)
+
+ 
+
+# =============================== Joining DataFrame ===============================
+
+# table_data = [
+
+#     (1, "500001", 300)
+
+# ]
+
+# table_columns = ["Document_No", "Amount"]
+
+# new_table_query = spark.createDataFrame(data=table_data, schema=table_columns) # Generating new table
+
+# display(new_table_query)
+
+# display(query_df.join(new_table_query,query_df.Document_No == new_table_query.Document_No, "left"))
+
+ 
+
+# =============================== Data handling ===============================
+
+# new_table = query_df.select(col("Posting_Date"), date_format(col("Posting_Date"), "MM-dd-yyyy").alias("date_format")) # This is how we can format the date, import date_format
+
+# new_table = query_df.select(col("Posting_Date"), to_date(col("Posting_Date"), "yyyy-dd-MM").alias("to_date")) # Changing the format from string to date /to_date must be imported/
+
+# display(query_df.select(col("Posting_Date"), datediff(current_date(), col("Posting_Date")).alias("datediff"))) # Shows the diff betwen the current date and the Posting Date /datediff and current_date must be imported/
+
+# display(query_df.select(col("Posting_Date"), year(col("Posting_Date"))).alias("year")) # We can use year, day, month, etc to show the needed result /they must be imported/
+
+ 
+
+# =============================== Spark SQL ===============================
+
+# df = spark.sql(
+
+#     "SELECT concat(Document_No, ' - ', Amount) as DocumentAmount, G_L_Account_No FROM AlexLakeHouse270125.dbo.Top26_test2 WHERE G_L_Account_No like '%5410%'"
+
+# ) # Advanced SQL requests
+
+# display(df)
+
+# df.createOrReplaceTempView("Details") # How we can make a temporary table /TempView/ and use it only for this session with the needed detail from the main table and reuse it where we need
+
+# spark.sql("SELECT * FROM Details").show()
+
+ 
+
+# =============================== Commands ===============================
+
+# !ls # shows a list with the directories
+
+# from notebookutils import mssparkutils
+
+# mssparkutils.fs.help()
+
+# print(mssparkutils.fs.ls('Tables/')) # This shows the all existing files in Tables folder
+
+# print(mssparkutils.fs.ls('Files/')) # Same as the above for Files folder
+
+ 
+
+# =============================== Create CSV Files ===============================
+
+# # dk15_IC_dk02.show()
+
+# path_dk02 = "Files/dk02_IC_dk15.csv"
+
+# dk02_IC_dk15.write.mode("overwrite").option("header", "true").csv(path_dk02)
+
+# path_dk15 = "Files/dk15_IC_dk02.csv"
+
+# dk15_IC_dk02.write.mode("overwrite").option("header", "true").csv(path_dk15)
+
+# dk02_IC_dk15.coalesce(1).write.mode("overwrite").option("header", "true").csv("Files/dk02_IC_dk15")
